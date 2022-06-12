@@ -1,10 +1,14 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const path = require('path');
+const fileUpload = require('express-fileupload');
+const methodOverride = require('method-override');
 const ejs = require('ejs');
-const Photo = require('./models/Photo');
+const photoController=require('./controllers/photoController')
+const aboutController=require('./controllers/aboutController')
 const app = express();
 const port = 3000;
+
+
 
 //connect Db
 mongoose
@@ -20,6 +24,8 @@ mongoose
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true })); // url datayı okumamuzu sağlar
 app.use(express.json()); // urlde ki datayı json çevirir
+app.use(fileUpload());
+app.use(methodOverride('_method',{methods:['POST','GET']}));
 
 // TEMPLATE ENGINE
 // mvc yapısında ki views kısmını belirtiriz. Expresse biz views olarak ejs kullanıcaz dedik
@@ -27,22 +33,33 @@ app.use(express.json()); // urlde ki datayı json çevirir
 app.set('view engine', 'ejs');
 
 // ROUTES
-app.get('/', async (req, res) => {
-  const photos = await Photo.find({});
-  res.render('index',{
-    photos
-  });
-});
-app.get('/about', (req, res) => {
-  res.render('about');
-});
-app.get('/add', (req, res) => {
-  res.render('add');
-});
-app.post('/photos', async (req, res) => {
-  await Photo.create(req.body);
-  res.redirect('/');
-});
+
+// Get All Photo
+app.get('/',photoController.getAllPhotosAsync);
+
+// Get Photo By Id
+app.get('/photos/:id', photoController.getPhotoByIdAsync);
+
+// Get Method - Add Photo 
+app.get('/add', photoController.addPhoto);
+
+// Post Method - Add Photo
+app.post('/photos', photoController.createPhotoAsync);
+
+// Get Method - Update Photo
+app.get('/photos/edit/:id', photoController.editPhotoAsync);
+
+// Post Method - Update Photo
+app.put('/photos/:id', photoController.updatePhotoAsync);
+
+// Delete Method
+app.delete('/photos/:id', photoController.deletePhotoAsync);
+
+
+// About Controller
+app.get('/about', aboutController.getAbout );
+
+
 
 app.listen(port, () => {
   console.log(`Sunucu ${port} port numarası ile başladı`);
