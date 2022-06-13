@@ -6,26 +6,23 @@ const ejs = require('ejs');
 const photoController=require('./controllers/photoController')
 const aboutController=require('./controllers/aboutController')
 const app = express();
-const port = 3000;
+const port = process.env.port || 5000;
 
 
 
 //connect Db
-mongoose
-  .connect('mongodb://127.0.0.1:27017/pcat-test-db', {
+mongoose.connect('mongodb+srv://serhat:Serhat159-+@cluster0.in0xw.mongodb.net/pcat-db?retryWrites=true&w=majority', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-  })
-  .then(() => console.log('Database Connected !'))
-  .catch((err) => console.log(err));
+  }).then(() => console.log('Database Connected !')).catch((err) => console.log(err));
 
 //MIDDLEWARE : Req ve Res arasında ki yapılan işlerin(metot,istek vs) tümüdür
 // static dosyalar burada tanımlanır
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true })); // url datayı okumamuzu sağlar
 app.use(express.json()); // urlde ki datayı json çevirir
-app.use(fileUpload());
-app.use(methodOverride('_method',{methods:['POST','GET']}));
+app.use(fileUpload()); // file işlemlerini yapmamızı sağlar
+app.use(methodOverride('_method',{methods:['POST','GET']})); // put ve delete methodlarını kullanmamızı sağlar
 
 // TEMPLATE ENGINE
 // mvc yapısında ki views kısmını belirtiriz. Expresse biz views olarak ejs kullanıcaz dedik

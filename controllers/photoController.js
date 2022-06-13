@@ -1,11 +1,20 @@
 const Photo = require('../models/Photo');
 const fs = require('fs');
 
-
 exports.getAllPhotosAsync = async (req, res) => {
-  const photos = await Photo.find({}).sort('-dateCreated'); // son yüklenen foto en başa gelsin diye sort kullandık. - ise yeniden eskiye demek
-  res.render('index', {
-    photos,
+  const page = req.query.page || 1; // ilk olarak ya 1. sayfayı al ya da queryden gelen page değerini al
+  const photosPerPage = 3; // sayfa başına kaç fotoğraf olsun
+  const totalPhotos = await Photo.find().countDocuments(); //veri tabanında kaç fotoğraf var
+  //console.log(totalPhotos);
+  const photos = await Photo.find({})
+    .sort('-dateCreated') //son yüklenen foto en başa gelsin diye sort kullandık. - ise yeniden eskiye demek
+    .skip((page - 1) * photosPerPage) // istediğimiz fotoğrafları pas geçmesini sağladık. (2-1)*2 =2. 1. ve 2. fotoğrafı pas geçip 3. fotoğraftanbaşlar
+    .limit(photosPerPage); // sayfa başına kaç fotoğraf olsun
+  
+    res.render('index', {
+    photos: photos,
+    current: page, // o anki sayfaya karşılık gelsin
+    pages: Math.ceil(totalPhotos / photosPerPage), // her sayfada kaç foto gösterilsin. math.ceil ise yukarı yuvarlaması için
   });
 };
 
